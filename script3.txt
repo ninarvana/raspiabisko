@@ -2,54 +2,53 @@ import os
 import time
 import zipfile
 
-def generate_zip():
-    zip_name = "photos.zip"
-    with zipfile.ZipFile(zip_name, 'w') as zipf:
-        for file in os.listdir('.'):
-            if file.lower().endswith(('.jpg', '.jpeg', '.png')):
-                zipf.write(file)
+def generate_zip(image_files):
+    with zipfile.ZipFile("photos.zip", "w") as zipf:
+        for file in image_files:
+            zipf.write(file)
 
 def generate_gallery():
     image_extensions = ('.jpg', '.jpeg', '.png')
-    files = sorted([f for f in os.listdir('.') if f.lower().endswith(image_extensions)])
+    image_files = sorted([f for f in os.listdir('.') if f.lower().endswith(image_extensions)])
 
-    if not files:
+    if not image_files:
         return
 
-    latest = files[-1]
+    latest = image_files[-1]
 
+    # Crée index.html
     with open("index.html", "w") as f:
-        f.write("""<!DOCTYPE html>
+        f.write(f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Galerie photo Raspberry</title>
+  <title>Galerie PhenoCam</title>
   <style>
-    body { font-family: sans-serif; background: #f7f7f7; padding: 20px; text-align: center; }
-    .latest { margin-bottom: 40px; }
-    .latest img { max-width: 90%; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.3); }
-    .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
-    .photo-block { background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.1); }
-    .photo-block img { width: 200px; height: auto; border-radius: 6px; }
-    .photo-block a { display: inline-block; margin-top: 6px; font-size: 0.9em; text-decoration: none; color: #0066cc; }
-    .update { margin-top: 20px; font-size: 0.9em; color: #666; }
-    .download-all { margin-top: 10px; font-size: 1em; }
+    body {{ font-family: sans-serif; background: #f7f7f7; padding: 20px; text-align: center; }}
+    .latest img {{ max-width: 90%; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.3); }}
+    .gallery {{ display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 30px; }}
+    .photo-block {{ background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.1); }}
+    .photo-block img {{ width: 200px; height: auto; border-radius: 6px; }}
+    .photo-block a {{ display: inline-block; margin-top: 6px; font-size: 0.9em; text-decoration: none; color: #0066cc; }}
+    .update {{ margin-top: 20px; font-size: 0.9em; color: #666; }}
+    .download-all {{ margin-top: 20px; font-size: 1em; }}
   </style>
 </head>
 <body>
   <h1>📷 PhenoCam Nuolja</h1>
   <div class="latest">
     <h2>Dernière photo</h2>
-    <img src="{0}" alt="Dernière photo">
+    <img src="{latest}" alt="Dernière photo">
   </div>
   <div class="download-all">
     <a href="photos.zip" download>📦 Télécharger toutes les photos</a>
   </div>
   <div class="gallery">
-""".format(latest))
+""")
 
-        for img in files:
-            f.write(f'''    <div class="photo-block">
+        for img in image_files:
+            f.write(f'''
+    <div class="photo-block">
       <img src="{img}" alt="{img}">
       <br>
       <a href="{img}" download>Télécharger</a>
@@ -62,16 +61,18 @@ def generate_gallery():
     document.getElementById('update-time').textContent = new Date().toLocaleString();
   </script>
 </body>
-</html>
-""")
+</html>""")
 
-# Boucle de surveillance
+    # Crée zip
+    generate_zip(image_files)
+
+# Lancement unique ou boucle
 if __name__ == "__main__":
     previous = set()
     while True:
         current = set(f for f in os.listdir('.') if f.lower().endswith(('.jpg', '.jpeg', '.png')))
         if current != previous:
-            generate_zip()
             generate_gallery()
             previous = current
         time.sleep(10)
+
