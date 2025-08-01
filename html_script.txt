@@ -23,7 +23,10 @@
         const html = parser.parseFromString(text, "text/html");
         const links = Array.from(html.querySelectorAll("a"))
           .map(a => a.getAttribute("href"))
-          .filter(href => /\.(jpg|jpeg|png)$/i.test(href) && !href.includes("index.html"));
+          .filter(href => {
+  const lower = href.toLowerCase();
+  return (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")) && !lower.includes("index.html");
+});
 
         const gallery = document.getElementById("gallery");
         links.forEach(file => {
