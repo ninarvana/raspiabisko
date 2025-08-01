@@ -1,0 +1,45 @@
+import os
+import time
+
+def generate_gallery():
+    image_extensions = ('.jpg', '.jpeg', '.png')
+    files = sorted([f for f in os.listdir('.') if f.lower().endswith(image_extensions)])
+
+    with open("index.html", "w") as f:
+        f.write("""<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Galerie photo Raspberry</title>
+  <style>
+    body { font-family: sans-serif; background: #f0f0f0; padding: 20px; text-align: center; }
+    .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .gallery img { width: 200px; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    .update { margin-top: 20px; font-size: 0.9em; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>📷 Galerie photo Raspberry</h1>
+  <div class="gallery">
+""")
+        for img in files:
+            f.write(f'    <a href="{img}"><img src="{img}" alt="{img}"></a>\n')
+
+        f.write("""  </div>
+  <div class="update">📅 Dernière mise à jour : <span id="update-time"></span></div>
+  <script>
+    document.getElementById('update-time').textContent = new Date().toLocaleString();
+  </script>
+</body>
+</html>
+""")
+
+# Boucle : vérifie toutes les 10 secondes
+if __name__ == "__main__":
+    previous = set()
+    while True:
+        current = set(f for f in os.listdir('.') if f.lower().endswith(('.jpg', '.jpeg', '.png')))
+        if current != previous:
+            generate_gallery()
+            previous = current
+        time.sleep(10)
