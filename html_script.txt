@@ -2,118 +2,47 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Galerie Photo</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #f0f0f0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .gallery {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-    .gallery img {
-      width: 200px;
-      height: auto;
-      object-fit: cover;
-      border: 2px solid #ccc;
-      border-radius: 4px;
-      transition: transform 0.2s;
-    }
-    .gallery img:hover {
-      transform: scale(1.05);
-      border-color: #555;
-    }
-    footer {
-      text-align: center;
-      margin-top: 30px;
-      color: #888;
-    }
-  </style>
-</head>
-<body>
-  <h1>Galerie photo Raspberry</h1>
-  <div class="gallery" id="gallery"></div>
-  <footer>📷 Dernière mise à jour : <span id="timestamp"></span></footer>
-
-  <script>
-    function formatDate(d) {
-      return d.toLocaleString('fr-FR');
-    }
-
-    document.getElementById('timestamp').innerText = formatDate(new Date());
-
-    fetch(window.location.href)
-      .then(res => res.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const links = [...doc.querySelectorAll('a')];
-        const images = links
-          .map(a => a.getAttribute('href'))
-          .filter(href => href.match(/\.(jpg|jpeg|png)$/i) && !href.includes('index.html'));
-
-        const container = document.getElementById('gallery');
-        images.forEach(src => {
-          const img = document.createElement('img');
-          img.src = src;
-          img.alt = src;
-          img.loading = "lazy";
-          container.appendChild(img);
-        });
-      });
-  </script>
-</body>
-</html>
-
-
-############ Version 2
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
   <title>Galerie photo Raspberry</title>
   <style>
-    body { font-family: sans-serif; background: #f0f0f0; padding: 20px; text-align: center; }
-    h1 { color: #222; }
-    .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
-    .gallery img { max-width: 200px; height: auto; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; }
-    .update { margin-top: 20px; font-size: 0.9em; color: #666; }
+    body { font-family: sans-serif; background: #fafafa; text-align: center; padding: 20px; }
+    h1 { color: #333; }
+    .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px; }
+    .item { width: 200px; }
+    .item img { width: 100%; border-radius: 8px; box-shadow: 0 0 4px rgba(0,0,0,0.2); }
+    .filename { font-size: 0.9em; margin-top: 5px; color: #555; word-wrap: break-word; }
   </style>
 </head>
 <body>
   <h1>Galerie photo Raspberry</h1>
   <div class="gallery" id="gallery"></div>
-  <div class="update">📷 Dernière mise à jour : <span id="update-time"></span></div>
-
   <script>
-    async function loadGallery() {
-      const response = await fetch(".");
-      const text = await response.text();
-      const parser = new DOMParser();
-      const html = parser.parseFromString(text, 'text/html');
-      const links = Array.from(html.querySelectorAll('a'))
-        .map(link => link.getAttribute('href'))
-        .filter(href => href.match(/\.(jpg|jpeg|png)$/i) && !href.includes('index.html'));
-      
-      const gallery = document.getElementById('gallery');
-      links.forEach(href => {
-        const img = document.createElement('img');
-        img.src = href;
-        img.alt = href;
-        gallery.appendChild(img);
+    fetch(".")
+      .then(response => response.text())
+      .then(text => {
+        const parser = new DOMParser();
+        const html = parser.parseFromString(text, "text/html");
+        const links = Array.from(html.querySelectorAll("a"))
+          .map(a => a.getAttribute("href"))
+          .filter(href => /\.(jpg|jpeg|png)$/i.test(href) && !href.includes("index.html"));
+
+        const gallery = document.getElementById("gallery");
+        links.forEach(file => {
+          const item = document.createElement("div");
+          item.className = "item";
+
+          const img = document.createElement("img");
+          img.src = file;
+          img.alt = file;
+
+          const name = document.createElement("div");
+          name.className = "filename";
+          name.textContent = file;
+
+          item.appendChild(img);
+          item.appendChild(name);
+          gallery.appendChild(item);
+        });
       });
-
-      document.getElementById('update-time').textContent = new Date().toLocaleString();
-    }
-
-    loadGallery();
   </script>
 </body>
 </html>
