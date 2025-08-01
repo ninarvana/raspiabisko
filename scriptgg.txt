@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Répertoire temporaire pour la photo
+PHOTO_DIR="/home/pi/photos_camA"
+mkdir -p "$PHOTO_DIR"
+
+# Nom du fichier avec horodatage
+FILENAME="camA_$(date +%Y%m%d_%H%M%S).jpg"
+FILEPATH="$PHOTO_DIR/$FILENAME"
+
+# Prendre la photo
+gphoto2 --capture-image-and-download --filename "$FILEPATH"
+
+# Vérifie que la photo existe bien
+if [ -f "$FILEPATH" ]; then
+    echo "Photo prise : $FILENAME"
+
+    # Envoi vers Google Drive
+    rclone copy "$FILEPATH" gdrive:/PhenoCam/camA/
+
+    # Si upload réussi, supprime le fichier local
+    if [ $? -eq 0 ]; then
+        echo "Upload réussi, suppression locale"
+        rm "$FILEPATH"
+    else
+        echo "⚠️ Erreur lors de l'upload"
+    fi
+else
+    echo "⚠️ Aucune photo capturée"
+fi
