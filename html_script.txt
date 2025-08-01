@@ -2,51 +2,27 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Galerie photo Raspberry</title>
+  <title>Galerie photo – version simple</title>
   <style>
-    body { font-family: sans-serif; background: #fafafa; text-align: center; padding: 20px; }
-    h1 { color: #333; }
-    .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px; }
-    .item { width: 200px; }
-    .item img { width: 100%; border-radius: 8px; box-shadow: 0 0 4px rgba(0,0,0,0.2); }
-    .filename { font-size: 0.9em; margin-top: 5px; color: #555; word-wrap: break-word; }
+    body { font-family: sans-serif; background: #f0f0f0; padding: 20px; text-align: center; }
+    img { max-width: 90%; height: auto; margin: 10px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
   </style>
 </head>
 <body>
-  <h1>Galerie photo Raspberry</h1>
-  <div class="gallery" id="gallery"></div>
+  <h1>📷 Galerie photo Raspberry</h1>
+
+  <!-- Liste manuelle ou semi-automatique -->
+  <img src="test_20250730_144057.jpg" alt="photo 1">
+
+  <!-- Tu peux ajouter plus de <img> comme ça si besoin -->
+  <!-- <img src="photo2.jpg"> -->
+
+  <p style="margin-top:2em; font-size: 0.9em; color: #666;">Dernière mise à jour : <span id="update-time"></span></p>
+
   <script>
-    fetch(".")
-      .then(response => response.text())
-      .then(text => {
-        const parser = new DOMParser();
-        const html = parser.parseFromString(text, "text/html");
-        const links = Array.from(html.querySelectorAll("a"))
-          .map(a => a.getAttribute("href"))
-          .filter(href => {
-  const lower = href.toLowerCase();
-  return (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")) && !lower.includes("index.html");
-});
-
-        const gallery = document.getElementById("gallery");
-        links.forEach(file => {
-          const item = document.createElement("div");
-          item.className = "item";
-
-          const img = document.createElement("img");
-          img.src = file;
-          img.alt = file;
-
-          const name = document.createElement("div");
-          name.className = "filename";
-          name.textContent = file;
-
-          item.appendChild(img);
-          item.appendChild(name);
-          gallery.appendChild(item);
-        });
-      });
+    document.getElementById('update-time').textContent = new Date().toLocaleString();
   </script>
 </body>
 </html>
+
 
