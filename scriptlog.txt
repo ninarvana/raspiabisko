@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Dossier de destination locale
+PHOTO_DIR="/mnt/testcam"
+# Nom du fichier
+FILENAME="test_$(date +%Y%m%d_%H%M%S).jpg"
+# Dossier de log
+LOG_FILE="/home/phenocam1/capture.log"
+
+# Log timestamp
+echo "[📷 $(date '+%Y-%m-%d %H:%M:%S')] Starting capture..." >> "$LOG_FILE"
+
+# Prendre la photo
+if gphoto2 --capture-image-download --filename "$PHOTO_DIR/$FILENAME" > /dev/null 2>&1; then
+    echo "[✅ $(date '+%Y-%m-%d %H:%M:%S')] Photo taken: $FILENAME" >> "$LOG_FILE"
+
+    # Envoyer sur Google Drive
+    if rclone copy "$PHOTO_DIR/$FILENAME" gdrive:phenocam > /dev/null 2>&1; then
+        echo "[☁️ $(date '+%Y-%m-%d %H:%M:%S')] Uploaded to Google Drive: $FILENAME" >> "$LOG_FILE"
+    else
+        echo "[❌ $(date '+%Y-%m-%d %H:%M:%S')] Upload failed: $FILENAME" >> "$LOG_FILE"
+    fi
+else
+    echo "[❌ $(date '+%Y-%m-%d %H:%M:%S')] Camera error - no photo captured" >> "$LOG_FILE"
+fi
