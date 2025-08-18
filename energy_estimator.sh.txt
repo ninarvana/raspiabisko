@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# === CONFIGURATION ===
+LOGFILE="/home/phenocam1/energy_log.csv"
+PHOTO_LOG="/home/phenocam1/capture.log"
+INTERVAL=300   # Temps entre chaque mesure (en secondes) : ici 5 minutes
+PI_IDLE_WATT=2.5
+PI_ACTIVE_WATT=4.0
+CANON_SHOT_WATT=1.5
+PHOTO_DURATION_SEC=10  # durée supposée d'un déclenchement photo
+
+# === INITIALISATION ===
+echo "Timestamp,CPU_Load,Temp_C,RAM_MB,Estimated_Watts,Total_Est_Wh" > "$LOGFILE"
+TOTAL_WH=0
+
+echo "[START] Logging energy estimation every $INTERVAL seconds. Press Ctrl+C to stop."
+
+while true; do
+  TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+
+  # === MESURE DU RASPBERRY ===
+  CPU_LOAD=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}')
+  TEMP_C=$(vcgencmd measure_temp | grep -oP '[0-9.]+')
+  RAM_MB=$(free -m | awk '/Mem:/ {print $3}')
+
+  # === ESTIMATION PUISSANCE PI ===
+  if (( $(echo "$CPU_LOAD > 30.0" | bc -l) )); then
+    PI_WATT=$PI_ACTIVE_WATT
+  else
+    PI_WATT=$PI_IDLE_WATT
+  fi
+
+  # === VERIFICATION DES PHOTOS ===
+  if grep -q "$(date +"%Y-%m-%d %H:%M")" "$PHOTO_LOG"; then
+    CANON_WH=$(echo "$CANON_SHOT_WATT * ($PHOTO_DURATION_SEC / 3600)" | bc -l)
+  else
+    CANON_WH=0
+  fi
+
+  # === CALCUL WH UTILISÉS SUR L'INTERVALLE ===
+  PI_WH=$(echo "$PI_WATT * ($INTERVAL / 3600)" | bc -l)
+  INTERVAL_WH=$(echo "$PI_WH + $CANON_WH" | bc -l)
+  TOTAL_WH=$(echo "$TOTAL_WH + $INTERVAL_WH" | bc -l)
+
+  echo "$TIMESTAMP,$CPU_LOAD,$TEMP_C,$RAM_MB,$PI_WATT,$TOTAL_WH" >> "$LOGFILE"
+  sleep $INTERVAL
+done
